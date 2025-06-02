@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { TextField, Button, Box, Typography, Alert } from '@mui/material'
-import axios from '../services/api'
+import axios from '../service/api';
 
 const LoginPage = () => {
   const { register, handleSubmit, formState: { errors } } = useForm()
@@ -11,7 +11,7 @@ const LoginPage = () => {
 
   const onSubmit = async (data) => {
     try {
-      const response = await axios.post('/api/auth/login', data)
+      const response = await axios.post('/auth/login', data)
       localStorage.setItem('token', response.data.token)
       localStorage.setItem('perfil', response.data.perfil)
       localStorage.setItem('nome', response.data.nome)

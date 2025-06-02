@@ -12,7 +12,7 @@ import {
   InputLabel,
   FormControl
 } from '@mui/material'
-import axios from '../service/api'
+import axios from '../service/api'; // Caminho relativo correto
 
 const CadastroPage = () => {
   const { register, handleSubmit, formState: { errors } } = useForm()
