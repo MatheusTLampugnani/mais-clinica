@@ -1,104 +1,86 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Container, Paper, Divider, Chip, Alert, Button } from '@mui/material';
-import axios from '../service/api';
+import api from '../service/api';
 
 const PacientePage = () => {
   const [consultas, setConsultas] = useState([]);
   const [error, setError] = useState('');
-  const [showHistoric, setShowHistoric] = useState(true);
 
-  useEffect(() => {
-    const fetchConsultas = async () => {
-      try {
-        const response = await axios.get('/paciente/consultas');
-        setConsultas(response.data);
-      } catch (err) {
-        setError('Erro ao carregar consultas');
-      }
-    };
-    fetchConsultas();
-  }, []);
-
-  const historicoConsultas = consultas.filter(consulta => 
-    new Date(consulta.dataHora) < new Date()
-  );
-
-  const proximasConsultas = consultas.filter(consulta => 
-    new Date(consulta.dataHora) >= new Date()
-  );
-
-  const handleCancelConsulta = async (consultaId) => {
+  const fetchConsultas = async () => {
+    const pacienteId = localStorage.getItem('id');
     try {
-      await axios.delete(`/consultas/${consultaId}`);
-      setConsultas(consultas.filter(c => c.id !== consultaId));
+      const response = await api.get(`/consultas/paciente/${pacienteId}`);
+      setConsultas(response.data.consultas);
     } catch (err) {
-      setError(err.response?.data?.message || 'Erro ao cancelar consulta');
+      setError('Erro ao carregar consultas');
     }
   };
 
-  return (
-    <Container maxWidth="md">
-      <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
-        <Typography variant="h4" gutterBottom>
-          Área do Paciente
-        </Typography>
-        
-        {error && <Alert severity="error">{error}</Alert>}
+  useEffect(() => {
+    fetchConsultas();
+  }, []);
 
-        <Box sx={{ mb: 4 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="h6" gutterBottom>
-              {showHistoric ? 'Histórico de Consultas' : 'Próximas Consultas'}
-            </Typography>
-            <Button onClick={() => setShowHistoric(!showHistoric)}>
-              {showHistoric ? 'Ver Próximas Consultas' : 'Ver Histórico'}
-            </Button>
-          </Box>
-          
-          {showHistoric ? (
-            historicoConsultas.length > 0 ? (
-              historicoConsultas.map((consulta) => (
-                <Box key={consulta.id} sx={{ mb: 3, p: 2, border: '1px solid #eee', borderRadius: 1 }}>
-                  <Typography><strong>Data:</strong> {new Date(consulta.dataHora).toLocaleString()}</Typography>
-                  <Typography><strong>Médico:</strong> {consulta.medico.nome} ({consulta.medico.especialidade})</Typography>
-                  {consulta.prontuario && (
+  const handleCancelConsulta = async (consultaId) => {
+    if (window.confirm("Tem certeza que deseja cancelar esta consulta?")) {
+      try {
+        await api.delete(`/consultas/${consultaId}`);
+        fetchConsultas(); // Recarrega a lista de consultas
+      } catch (err) {
+        setError(err.response?.data?.message || 'Erro ao cancelar consulta');
+      }
+    }
+  };
+
+  const agora = new Date();
+  const historicoConsultas = consultas.filter(c => new Date(c.dataHora) < agora);
+  const proximasConsultas = consultas.filter(c => new Date(c.dataHora) >= agora);
+
+  return (
+    <div className="card" style={{borderColor: '#8a2be2'}}>
+      <h4 className="card-header text-white text-center" style={{ backgroundColor: '#8a2be2' }}>Área do Paciente</h4>
+      <div className="card-body">
+        {error && <div className="alert alert-danger">{error}</div>}
+        
+        <h5 className="mb-3">Próximas Consultas</h5>
+        {proximasConsultas.length > 0 ? (
+          proximasConsultas.map((consulta) => (
+            <div key={consulta.id} className="card mb-3 shadow-sm">
+              <div className="card-body">
+                <p><strong>Data:</strong> {new Date(consulta.dataHora).toLocaleString('pt-BR')}</p>
+                <p><strong>Médico:</strong> {consulta.Medico.nome}</p>
+                <p className="text-muted small">Lembrete: Comparecer 15 minutos antes do horário.</p>
+                <button className="btn btn-sm btn-outline-danger" onClick={() => handleCancelConsulta(consulta.id)}>
+                  Cancelar Consulta
+                </button>
+              </div>
+            </div>
+          ))
+        ) : (
+          <p className="text-muted">Nenhuma consulta agendada.</p>
+        )}
+
+        <hr className="my-4"/>
+
+        <h5 className="mb-3">Histórico de Consultas</h5>
+        {historicoConsultas.length > 0 ? (
+          historicoConsultas.map((consulta) => (
+            <div key={consulta.id} className="card bg-light mb-3">
+               <div className="card-body">
+                <p><strong>Data:</strong> {new Date(consulta.dataHora).toLocaleString('pt-BR')}</p>
+                <p><strong>Médico:</strong> {consulta.Medico.nome}</p>
+                 {consulta.Prontuario && (
                     <>
-                      <Typography><strong>Diagnóstico:</strong> {consulta.prontuario.diagnostico}</Typography>
-                      <Typography><strong>Prescrição:</strong> {consulta.prontuario.prescricao}</Typography>
+                      <p><strong>Diagnóstico:</strong> {consulta.Prontuario.diagnostico}</p>
+                      <p><strong>Prescrição:</strong> {consulta.Prontuario.prescricao}</p>
                     </>
                   )}
-                </Box>
-              ))
-            ) : (
-              <Typography>Nenhuma consulta no histórico</Typography>
-            )
-          ) : (
-            proximasConsultas.length > 0 ? (
-              proximasConsultas.map((consulta) => (
-                <Box key={consulta.id} sx={{ mb: 3, p: 2, border: '1px solid #eee', borderRadius: 1 }}>
-                  <Typography><strong>Data:</strong> {new Date(consulta.dataHora).toLocaleString()}</Typography>
-                  <Typography><strong>Médico:</strong> {consulta.medico.nome} ({consulta.medico.especialidade})</Typography>
-                  <Typography color="text.secondary" sx={{ mt: 1, fontStyle: 'italic' }}>
-                    Lembrete: Comparecer 15 minutos antes do horário
-                  </Typography>
-                  <Button 
-                    variant="outlined" 
-                    color="error"
-                    size="small"
-                    sx={{ mt: 1 }}
-                    onClick={() => handleCancelConsulta(consulta.id)}
-                  >
-                    Cancelar Consulta
-                  </Button>
-                </Box>
-              ))
-            ) : (
-              <Typography>Nenhuma consulta agendada</Typography>
-            )
-          )}
-        </Box>
-      </Paper>
-    </Container>
+              </div>
+            </div>
+          ))
+        ) : (
+          <p className="text-muted">Nenhuma consulta no histórico.</p>
+        )}
+      </div>
+    </div>
   );
 };
 

@@ -8,7 +8,6 @@ const authController = {
     try {
       const { login, senha } = req.body;
       
-      // Validação dos campos de entrada
       if (!login || !senha) {
         return res.status(400).json({ 
           success: false,
@@ -32,7 +31,6 @@ const authController = {
         });
       }
       
-      // Criação do token JWT
       const token = jwt.sign(
         { 
           id: usuario.id, 
@@ -42,7 +40,6 @@ const authController = {
         { expiresIn: '8h' }
       );
       
-      // Resposta de sucesso
       res.json({ 
         success: true,
         token,
@@ -65,7 +62,6 @@ const authController = {
     try {
       const { nome, login, senha, perfil } = req.body;
       
-      // Validação dos campos obrigatórios
       if (!nome || !login || !senha || !perfil) {
         return res.status(400).json({
           success: false,
@@ -73,7 +69,6 @@ const authController = {
         });
       }
       
-      // Verifica se o perfil é válido
       const perfisValidos = ['admin', 'medico', 'recepcionista'];
       if (!perfisValidos.includes(perfil)) {
         return res.status(400).json({
@@ -82,7 +77,6 @@ const authController = {
         });
       }
       
-      // Verifica se o usuário já existe
       const usuarioExistente = await Usuario.findOne({ where: { login } });
       if (usuarioExistente) {
         return res.status(400).json({ 
@@ -91,7 +85,6 @@ const authController = {
         });
       }
       
-      // Cria o novo usuário
       const novoUsuario = await Usuario.create({ 
         nome, 
         login, 
@@ -99,7 +92,6 @@ const authController = {
         perfil 
       });
       
-      // Resposta de sucesso
       res.status(201).json({ 
         success: true,
         id: novoUsuario.id,

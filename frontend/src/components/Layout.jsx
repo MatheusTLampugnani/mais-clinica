@@ -1,32 +1,51 @@
-import { Link, useNavigate } from "react-router-dom";
-import { AppBar, Toolbar, Typography, Button, Container } from "@mui/material";
+import { Outlet, useNavigate, Link } from "react-router-dom";
 
 const Layout = () => {
   const navigate = useNavigate();
-  const perfil = localStorage.getItem("perfil");
+  const token = localStorage.getItem("token");
   const nome = localStorage.getItem("nome");
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("perfil");
-    localStorage.removeItem("nome");
-    navigate("/");
+    localStorage.clear();
+    navigate("/login");
   };
 
   return (
     <>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Clínica Médica - {nome} ({perfil})
-          </Typography>
-          <Button color="inherit" onClick={handleLogout}>
-            Sair
-          </Button>
-        </Toolbar>
-      </AppBar>
-      <Container maxWidth="md" sx={{ mt: 4 }}>
-      </Container>
+      <header>
+        <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
+          <div className="container">
+            <Link className="navbar-brand" to="/">
+              Mais Clínica
+            </Link>
+            <div className="collapse navbar-collapse">
+              <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
+                {token ? (
+                  <>
+                    <li className="nav-item">
+                      <span className="navbar-text me-3">Olá, {nome}</span>
+                    </li>
+                    <li className="nav-item">
+                      <button className="btn btn-danger" onClick={handleLogout}>
+                        Sair
+                      </button>
+                    </li>
+                  </>
+                ) : (
+                  <li className="nav-item">
+                    <Link className="btn btn-light" to="/login">
+                      Login
+                    </Link>
+                  </li>
+                )}
+              </ul>
+            </div>
+          </div>
+        </nav>
+      </header>
+      <main className="container mt-4">
+        <Outlet />
+      </main>
     </>
   );
 };

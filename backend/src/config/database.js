@@ -10,9 +10,9 @@ const sequelize = new Sequelize(
     dialect: 'postgres',
     logging: false,
     define: {
-      schema: 'mais_clinica'
+      schema: 'public'
     },
-    searchPath: 'mais_clinica'
+    searchPath: 'public'
   }
 );
 

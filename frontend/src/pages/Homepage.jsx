@@ -1,50 +1,64 @@
-import { useEffect, useState } from 'react'
-import { Typography, Box, Button } from '@mui/material'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 
 const HomePage = () => {
-  const [user, setUser] = useState(null)
-  const navigate = useNavigate()
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    const perfil = localStorage.getItem('perfil')
-    const nome = localStorage.getItem('nome')
+    const token = localStorage.getItem('token');
+    const perfil = localStorage.getItem('perfil');
     
-    if (token && perfil && nome) {
-      setUser({ perfil, nome })
-    } else {
-      navigate('/login')
-    }
-  }, [navigate])
+    if (token && perfil) {
+      setIsLoggedIn(true);
+      
+      setTimeout(() => {
+        switch (perfil) {
+          case 'recepcionista':
+            navigate('/recepcionista');
+            break;
+          case 'medico':
+            navigate('/medico');
+            break;
+          case 'paciente':
+            navigate('/paciente');
+            break;
+          default:
+            localStorage.clear();
+            navigate('/login');
+        }
+      }, 500);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('perfil')
-    localStorage.removeItem('nome')
-    navigate('/login')
+    } else {
+      setIsLoggedIn(false);
+    }
+  }, [navigate]);
+
+  if (isLoggedIn) {
+    return (
+      <div className="text-center">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+        <p className="mt-3">Redirecionando para o seu painel...</p>
+      </div>
+    );
   }
 
-  if (!user) return <div>Carregando...</div>
-
   return (
-    <Box sx={{ textAlign: 'center', mt: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Bem-vindo, {user.nome}!
-      </Typography>
-      <Typography variant="h6" gutterBottom>
-        Perfil: {user.perfil}
-      </Typography>
-      <Button 
-        variant="contained" 
-        color="error"
-        onClick={handleLogout}
-        sx={{ mt: 4 }}
-      >
-        Sair
-      </Button>
-    </Box>
-  )
-}
+    <div className="p-5 mb-4 bg-light rounded-3 shadow-sm text-center">
+      <div className="container-fluid py-5">
+        <h1 className="display-5 fw-bold">Bem-vindo à Mais Clínica</h1>
+        <p className="fs-4">
+          Sua solução completa para gestão de consultas e prontuários.
+        </p>
+        <p>Faça o login para acessar seu painel.</p>
+        <Link className="btn btn-primary btn-lg mt-3" to="/login">
+          Ir para o Login
+        </Link>
+      </div>
+    </div>
+  );
+};
 
-export default HomePage
+export default HomePage;
