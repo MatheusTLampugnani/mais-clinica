@@ -1,4 +1,5 @@
 const { Consulta, Paciente, Medico, Prontuario } = require('../models');
+const { Op } = require('sequelize');
 
 const consultaController = {
   async create(req, res) {
@@ -32,6 +33,33 @@ const consultaController = {
     }
   },
 
+  async getFilaDeEspera(req, res) {
+    try {
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+      const amanha = new Date(hoje);
+      amanha.setDate(hoje.getDate() + 1);
+
+      const fila = await Consulta.findAll({
+        where: {
+          dataHora: {
+            [Op.gte]: hoje,
+            [Op.lt]: amanha,
+          },
+          status: 'agendada',
+        },
+        include: [
+          { model: Paciente, attributes: ['nome'] },
+          { model: Medico, attributes: ['nome'] }
+        ],
+        order: [['dataHora', 'ASC']]
+      });
+      res.json({ success: true, fila });
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Erro ao buscar fila de espera', error: error.message });
+    }
+  },
+
   async getByMedico(req, res) {
     try {
       const medicoId = req.params.id;
@@ -62,13 +90,18 @@ const consultaController = {
     }
   },
 
-    async delete(req, res) {
+  async delete(req, res) {
     try {
       const { id } = req.params;
-      const consulta = await Consulta.findByPk(id);
+      const consulta = await Consulta.findByPk(id, { include: Paciente });
 
       if (!consulta) {
         return res.status(404).json({ message: 'Consulta não encontrada' });
+      }
+
+      const usuarioLogado = req.usuario;
+      if (usuarioLogado.perfil === 'paciente' && consulta.Paciente.UsuarioId !== usuarioLogado.id) {
+        return res.status(403).json({ message: 'Acesso negado. Você não pode cancelar a consulta de outro paciente.' });
       }
 
       if (consulta.status !== 'agendada') {

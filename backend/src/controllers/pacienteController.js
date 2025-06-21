@@ -1,27 +1,36 @@
-const { Paciente, Usuario } = require('../models');
+const { Paciente, Usuario, sequelize } = require('../models');
 
 const pacienteController = {
-  // Cadastra um novo paciente e o associa a um usuário
   async create(req, res) {
+    const transaction = await sequelize.transaction();
     try {
-      const { nome, dataNascimento, cpf, contato, usuarioId } = req.body;
+      const { nome, dataNascimento, cpf, contato, login, senha } = req.body;
+
+      const novoUsuario = await Usuario.create({
+        nome,
+        login,
+        senha,
+        perfil: 'paciente'
+      }, { transaction });
 
       const novoPaciente = await Paciente.create({
         nome,
         dataNascimento,
         cpf,
         contato,
-        UsuarioId: usuarioId
-      });
-
+        UsuarioId: novoUsuario.id
+      }, { transaction });
+      
+      await transaction.commit();
       res.status(201).json({ success: true, paciente: novoPaciente });
+
     } catch (error) {
+      await transaction.rollback();
       console.error('Erro ao criar paciente:', error);
-      res.status(500).json({ success: false, message: 'Erro no servidor ao criar paciente' });
+      res.status(500).json({ success: false, message: 'Erro no servidor ao criar paciente', error: error.message });
     }
   },
 
-  // Retorna todos os pacientes cadastrados
   async getAll(req, res) {
     try {
       const pacientes = await Paciente.findAll({ include: Usuario });
@@ -32,7 +41,6 @@ const pacienteController = {
     }
   },
 
-  // Retorna um paciente específico pelo ID
   async getById(req, res) {
     try {
       const paciente = await Paciente.findByPk(req.params.id, { include: Usuario });

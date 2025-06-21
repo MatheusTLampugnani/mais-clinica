@@ -3,19 +3,18 @@ const router = express.Router();
 const consultaController = require('../controllers/consultaController');
 const authMiddleware = require('../middleware/authMiddleware');
 
-// Agenda consulta (recepcionista)
-router.post('/', authMiddleware(['recepcionista']), consultaController.create);
+const adminOnly = authMiddleware(['admin']);
+const medicoOnly = authMiddleware(['medico']);
+const pacienteOnly = authMiddleware(['paciente']);
+const recepcionistaOnly = authMiddleware(['recepcionista']);
+const recepcionistaOrAdmin = authMiddleware(['recepcionista', 'admin']);
 
-// Busca todas as consultas (admin)
-router.get('/', authMiddleware(['admin']), consultaController.getAll);
-
-// Busca consultas por médico (médico)
-router.get('/medico/:id', authMiddleware(['medico']), consultaController.getByMedico);
-
-// Busca consultas por paciente (paciente)
-router.get('/paciente/:id', authMiddleware(['paciente']), consultaController.getByPaciente);
-
-// Permite que um paciente ou recepcionista cancele uma consulta
+router.post('/', recepcionistaOnly, consultaController.create);
+router.get('/', adminOnly, consultaController.getAll);
+router.get('/fila-espera', recepcionistaOrAdmin, consultaController.getFilaDeEspera);
+router.get('/medico/:id', medicoOnly, consultaController.getByMedico);
+router.get('/paciente/:id', pacienteOnly, consultaController.getByPaciente);
 router.delete('/:id', authMiddleware(['paciente', 'recepcionista']), consultaController.delete);
+
 
 module.exports = router;

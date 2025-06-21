@@ -1,25 +1,37 @@
-const { Medico, Especialidade, Usuario } = require('../models');
+const { Medico, Especialidade, Usuario, sequelize } = require('../models');
 
 const medicoController = {
   async create(req, res) {
+    const transaction = await sequelize.transaction();
     try {
-      const { nome, crm, usuarioId, especialidadeIds } = req.body;
+      const { nome, crm, especialidadeIds, login, senha } = req.body;
+
+      const novoUsuario = await Usuario.create({
+        nome,
+        login,
+        senha,
+        perfil: 'medico'
+      }, { transaction });
 
       const novoMedico = await Medico.create({
         nome,
         crm,
-        UsuarioId: usuarioId
-      });
+        UsuarioId: novoUsuario.id
+      }, { transaction });
 
       if (especialidadeIds && especialidadeIds.length > 0) {
-        await novoMedico.setEspecialidades(especialidadeIds);
+        await novoMedico.setEspecialidades(especialidadeIds, { transaction });
       }
+
+      await transaction.commit();
 
       const medicoCompleto = await Medico.findByPk(novoMedico.id, { include: [Usuario, Especialidade] });
       res.status(201).json({ success: true, medico: medicoCompleto });
+      
     } catch (error) {
+      await transaction.rollback();
       console.error('Erro ao criar médico:', error);
-      res.status(500).json({ success: false, message: 'Erro no servidor ao criar médico' });
+      res.status(500).json({ success: false, message: 'Erro no servidor ao criar médico', error: error.message });
     }
   },
 
@@ -78,7 +90,7 @@ const medicoController = {
       });
 
       if (deleted) {
-        return res.status(204).send(); // Operação bem-sucedida, sem conteúdo para retornar
+        return res.status(204).send();
       }
       return res.status(404).json({ success: false, message: 'Médico não encontrado' });
     } catch (error) {

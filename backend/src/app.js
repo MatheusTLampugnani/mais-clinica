@@ -13,6 +13,9 @@ const medicoRoutes = require('./routes/medicoRoutes');
 const consultaRoutes = require('./routes/consultaRoutes');
 const prontuarioRoutes = require('./routes/prontuarioRoutes');
 const especialidadeRoutes = require('./routes/especialidadeRoutes');
+const convenioRoutes = require('./routes/convenioRoutes');
+const anexoRoutes = require('./routes/anexoRoutes');
+const relatorioRoutes = require('./routes/relatorioRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/pacientes', pacienteRoutes);
@@ -20,6 +23,10 @@ app.use('/api/medicos', medicoRoutes);
 app.use('/api/consultas', consultaRoutes);
 app.use('/api/prontuarios', prontuarioRoutes);
 app.use('/api/especialidades', especialidadeRoutes);
+app.use('/api/convenios', convenioRoutes);
+app.use('/api/anexos', anexoRoutes);
+app.use('/api/relatorios', relatorioRoutes);
+
 
 app.get('/api', (req, res) => {
   res.json({
