@@ -71,12 +71,36 @@ const RecepcionistaPage = () => {
               {error && <div className="alert alert-danger">{error}</div>}
               {success && <div className="alert alert-success">{success}</div>}
               <form onSubmit={handleAgendamento}>
+                <div className="mb-3">
+                  <label htmlFor="pacienteId" className="form-label">Paciente</label>
+                  <select id="pacienteId" name="pacienteId" className="form-select" value={agendamento.pacienteId} onChange={handleChange} required>
+                    <option value="">Selecione um paciente</option>
+                    {pacientes.map((p) => (<option key={p.id} value={p.id}>{p.nome}</option>))}
+                  </select>
+                </div>
+                <div className="mb-3">
+                  <label htmlFor="medicoId" className="form-label">Médico</label>
+                  <select id="medicoId" name="medicoId" className="form-select" value={agendamento.medicoId} onChange={handleChange} required>
+                    <option value="">Selecione um médico</option>
+                    {medicos.map((m) => (<option key={m.id} value={m.id}>{m.nome}</option>))}
+                  </select>
+                </div>
                  <div className="mb-3">
                   <label htmlFor="convenioId" className="form-label">Convênio (Opcional)</label>
                   <select id="convenioId" name="convenioId" className="form-select" value={agendamento.convenioId} onChange={handleChange}>
                     <option value="">Nenhum</option>
                     {convenios.map((c) => (<option key={c.id} value={c.id}>{c.nome}</option>))}
                   </select>
+                </div>
+                <div className="row mb-3">
+                  <div className="col">
+                    <label htmlFor="data" className="form-label">Data</label>
+                    <input type="date" id="data" name="data" className="form-control" value={agendamento.data} onChange={handleChange} required/>
+                  </div>
+                  <div className="col">
+                    <label htmlFor="hora" className="form-label">Hora</label>
+                    <input type="time" id="hora" name="hora" className="form-control" value={agendamento.hora} onChange={handleChange} required/>
+                  </div>
                 </div>
                 <div className="d-grid"><button type="submit" className="btn btn-info btn-lg text-white">Agendar</button></div>
               </form>
