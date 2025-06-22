@@ -21,8 +21,13 @@ Paciente.hasMany(Consulta);
 Medico.hasMany(Consulta);
 Convenio.hasMany(Consulta);
 
-Prontuario.belongsTo(Consulta, { onDelete: 'CASCADE' });
-Consulta.hasOne(Prontuario);
+Prontuario.belongsTo(Consulta, { 
+  foreignKey: 'ConsultaId', 
+  onDelete: 'CASCADE' 
+});
+Consulta.hasOne(Prontuario, { 
+  foreignKey: 'ConsultaId' 
+});
 
 AnexoExame.belongsTo(Prontuario, { onDelete: 'CASCADE' });
 Prontuario.hasMany(AnexoExame);
@@ -35,8 +40,8 @@ const db = {
   Especialidade,
   Consulta,
   Prontuario,
-  Convenio,    
-  AnexoExame,  
+  Convenio,
+  AnexoExame,
 };
 
 module.exports = db;

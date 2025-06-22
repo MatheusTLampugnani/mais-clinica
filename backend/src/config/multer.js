@@ -21,10 +21,15 @@ const upload = multer({
   fileFilter: (req, file, cb) => {
     const allowedMimes = [
       'image/jpeg',
-      'image/pjpeg',
       'image/png',
+      'image/gif',
+      'image/webp',
       'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/plain',
     ];
+
     if (allowedMimes.includes(file.mimetype)) {
       cb(null, true);
     } else {
