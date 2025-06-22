@@ -1,4 +1,4 @@
-const { Consulta, Paciente, Medico, Prontuario } = require('../models');
+const { Consulta, Paciente, Medico, Prontuario, AnexoExame } = require('../models');
 const { Op } = require('sequelize');
 
 
