@@ -1,44 +1,108 @@
-# Sistema de Gestão de Clínicas Médicas
 
-## Descrição do Projeto
+# Mais Clínica
 
-Este é um **Sistema de Gestão de Clínicas Médicas** desenvolvido para otimizar o atendimento em clínicas multiespecialidades. A proposta é automatizar e centralizar os processos essenciais da rotina clínica, oferecendo uma solução tecnológica robusta, intuitiva e segura.
+Este repositório contém o código-fonte do sistema **Mais Clínica**, uma aplicação para gerenciamento de atendimentos em clínicas médicas. Este manual fornece instruções passo a passo para configurar e executar o projeto em um ambiente de desenvolvimento.
 
-## Funcionalidades Principais
+---
 
-- **Agendamento de Consultas**  
-  Interface prática para marcação e visualização de consultas por especialidade e profissional.
+## 1. Pré-requisitos
 
-- **Gerenciamento de Prontuários Eletrônicos**  
-  Armazenamento seguro e centralizado de históricos médicos, exames e anotações clínicas.
+Antes de iniciar, verifique se você tem os seguintes softwares instalados:
 
-- **Controle de Acesso de Usuários**  
-  Sistema de autenticação com diferentes níveis de permissão (admin, médico, recepcionista, etc).
+- **Node.js** (versão 18 ou superior)
+- **npm** (geralmente instalado com o Node.js)
+- **PostgreSQL** (banco de dados relacional)
 
-- **Gestão de Pacientes e Médicos**  
-  Cadastro, edição e consulta de informações de pacientes e profissionais da saúde.
+---
 
-- **Emissão de Relatórios Administrativos e Financeiros**  
-  Relatórios completos para análise gerencial, faturamento, produtividade e indicadores de saúde.
+## 2. Configuração do Backend
 
-## Objetivo
+### Navegue até a pasta do backend
 
-O objetivo do sistema é aumentar a eficiência operacional, melhorar a organização dos atendimentos e garantir a segurança dos dados médicos. Ele foi pensado para atender às necessidades reais de clínicas que ainda utilizam processos manuais ou sistemas fragmentados.
+```bash
+cd mais-clinica/backend
+```
 
-## Problemas Resolvidos
+### Instale as dependências
 
-- Atrasos no atendimento
-- Falhas na comunicação interna
-- Perda ou extravio de dados clínicos
-- Falta de integração entre setores administrativos e médicos
+```bash
+npm install
+```
 
-## Motivação
+### Configure o Banco de Dados
 
-A crescente demanda por serviços de saúde ágeis, personalizados e digitais motivou a criação deste sistema. A proposta é melhorar significativamente a experiência do paciente, além de facilitar o trabalho das equipes médicas e administrativas por meio de uma ferramenta moderna e eficiente.
+1. Certifique-se de que o serviço do PostgreSQL está em execução.
+2. Crie um novo banco de dados, por exemplo: `mais_clinica_db`.
 
-## Segurança
+### Configure as variáveis de ambiente
 
-A segurança dos dados é uma prioridade. O sistema inclui:
-- Criptografia de dados sensíveis
-- Controle de acesso por perfil
-- Backups automáticos
+Crie um arquivo chamado `.env` na raiz da pasta `backend` com o seguinte conteúdo (ajuste os valores conforme sua configuração local):
+
+```env
+# Configuração do Banco de Dados PostgreSQL
+DB_HOST=localhost
+DB_USER=seu_usuario_postgres
+DB_PASSWORD=sua_senha_postgres
+DB_NAME=mais_clinica_db
+DB_PORT=5432
+
+# Chave secreta para gerar os tokens JWT
+JWT_SECRET=uma_chave_secreta_forte_e_longa_aqui
+
+# Porta da aplicação
+PORT=3001
+```
+
+### Inicie o servidor backend
+
+```bash
+npm start
+```
+
+O backend estará rodando em: [http://localhost:3001](http://localhost:3001)
+
+---
+
+## 3. Configuração do Frontend
+
+### Abra um novo terminal
+
+Mantenha o terminal do backend em execução e abra um novo terminal.
+
+### Navegue até a pasta do frontend
+
+```bash
+cd mais-clinica/frontend
+```
+
+### Instale as dependências
+
+```bash
+npm install
+```
+
+### Inicie o servidor frontend
+
+```bash
+npm run dev
+```
+
+O frontend estará disponível no endereço exibido no terminal (geralmente: [http://localhost:5173](http://localhost:5173))
+
+---
+
+## 4. Acessando e Usando o Sistema
+
+### Primeiro acesso
+
+1. Abra seu navegador e acesse: [http://localhost:5173](http://localhost:5173)
+2. Clique em **"Cadastre-se"** para criar o primeiro usuário.
+3. Preencha os dados e selecione o perfil **"Administrador"**.
+4. Após o cadastro, faça o login com as credenciais criadas.
+
+### Fluxo de uso por perfil
+
+- **Administrador:** Acesse o painel do administrador para cadastrar Convênios, Especialidades, Médicos e Pacientes.
+- **Recepcionista:** Utilize a tela principal para agendar consultas para os pacientes e médicos cadastrados.
+- **Médico:** Acesse seu painel para visualizar consultas, atender pacientes e preencher prontuários, incluindo upload de exames.
+- **Paciente:** Acesse seu painel para visualizar o histórico e os detalhes de suas consultas.
