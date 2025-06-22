@@ -3,7 +3,13 @@ const router = express.Router();
 const medicoController = require('../controllers/medicoController');
 const authMiddleware = require('../middleware/authMiddleware');
 
-router.get('/', authMiddleware(['recepcionista', 'admin']), medicoController.getAll);
-router.post('/', authMiddleware(['admin']), medicoController.create);
+const adminOnly = authMiddleware(['admin']);
+const adminOrRecepcionista = authMiddleware(['admin', 'recepcionista']);
+
+router.get('/', adminOrRecepcionista, medicoController.getAll);
+router.get('/:id', adminOnly, medicoController.getById);
+router.post('/', adminOnly, medicoController.create);
+router.put('/:id', adminOnly, medicoController.update);
+router.delete('/:id', adminOnly, medicoController.delete);
 
 module.exports = router;

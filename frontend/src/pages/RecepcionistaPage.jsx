@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../service/api';
+import CadastrarPaciente from '../components/recepcionista/CadastrarPaciente';
 
 const RecepcionistaPage = () => {
   const [pacientes, setPacientes] = useState([]);
@@ -29,7 +30,7 @@ const RecepcionistaPage = () => {
       setConvenios(conveniosRes.data.convenios);
       setFilaEspera(filaRes.data.fila);
     } catch (err) {
-      setError('Erro ao carregar dados.');
+      setError('Erro ao carregar dados da página.');
     }
   };
 
@@ -57,32 +58,36 @@ const RecepcionistaPage = () => {
   };
   
   const handleChange = (e) => {
-    setAgendamento({ ...agendamento, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setAgendamento(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
   };
 
   return (
     <div className="card border-info">
-      <h4 className="card-header text-white bg-info text-center">Painel do Recepcionista</h4>
+      <h4 className="card-header text-white bg-info text-center">Painel da Recepcionista</h4>
       <div className="card-body">
         <div className="row">
           <div className="col-md-7">
              <div className="card p-4 shadow-sm">
-              <h5 className="card-title text-center mb-4">Agendamento de Consulta</h5>
+              <h5 className="card-title text-center mb-4">Agendar Nova Consulta</h5>
               {error && <div className="alert alert-danger">{error}</div>}
               {success && <div className="alert alert-success">{success}</div>}
               <form onSubmit={handleAgendamento}>
                 <div className="mb-3">
                   <label htmlFor="pacienteId" className="form-label">Paciente</label>
                   <select id="pacienteId" name="pacienteId" className="form-select" value={agendamento.pacienteId} onChange={handleChange} required>
-                    <option value="">Selecione um paciente</option>
-                    {pacientes.map((p) => (<option key={p.id} value={p.id}>{p.nome}</option>))}
+                    <option value="" disabled>Selecione um paciente</option>
+                    {pacientes.map((paciente) => (<option key={paciente.id} value={paciente.id}>{paciente.nome}</option>))}
                   </select>
                 </div>
                 <div className="mb-3">
                   <label htmlFor="medicoId" className="form-label">Médico</label>
                   <select id="medicoId" name="medicoId" className="form-select" value={agendamento.medicoId} onChange={handleChange} required>
-                    <option value="">Selecione um médico</option>
-                    {medicos.map((m) => (<option key={m.id} value={m.id}>{m.nome}</option>))}
+                    <option value="" disabled>Selecione um médico</option>
+                    {medicos.map((medico) => (<option key={medico.id} value={medico.id}>{medico.nome}</option>))}
                   </select>
                 </div>
                  <div className="mb-3">
@@ -92,15 +97,15 @@ const RecepcionistaPage = () => {
                     {convenios.map((c) => (<option key={c.id} value={c.id}>{c.nome}</option>))}
                   </select>
                 </div>
-                <div className="row mb-3">
-                  <div className="col">
-                    <label htmlFor="data" className="form-label">Data</label>
-                    <input type="date" id="data" name="data" className="form-control" value={agendamento.data} onChange={handleChange} required/>
-                  </div>
-                  <div className="col">
-                    <label htmlFor="hora" className="form-label">Hora</label>
-                    <input type="time" id="hora" name="hora" className="form-control" value={agendamento.hora} onChange={handleChange} required/>
-                  </div>
+                <div className="row">
+                    <div className="col-md-6 mb-3">
+                        <label htmlFor="data" className="form-label">Data</label>
+                        <input id="data" name="data" type="date" className="form-control" value={agendamento.data} onChange={handleChange} required />
+                    </div>
+                    <div className="col-md-6 mb-3">
+                         <label htmlFor="hora" className="form-label">Hora</label>
+                        <input id="hora" name="hora" type="time" className="form-control" value={agendamento.hora} onChange={handleChange} required />
+                    </div>
                 </div>
                 <div className="d-grid"><button type="submit" className="btn btn-info btn-lg text-white">Agendar</button></div>
               </form>
@@ -116,11 +121,18 @@ const RecepcionistaPage = () => {
                             <br/>
                             <small className="text-muted">Dr(a). {c.Medico.nome}</small>
                         </li>
-                    )) : <p className="text-muted text-center">Nenhuma consulta na fila.</p>}
+                    )) : <p className="text-muted text-center mt-3">Nenhuma consulta na fila para hoje.</p>}
                 </ul>
             </div>
           </div>
         </div>
+        <hr className="my-4"/>
+        <div className="row justify-content-center">
+            <div className="col-lg-10">
+                <CadastrarPaciente />
+            </div>
+        </div>
+
       </div>
     </div>
   );

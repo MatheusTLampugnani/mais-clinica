@@ -59,29 +59,35 @@ const medicoController = {
   },
 
   async update(req, res) {
+    const transaction = await sequelize.transaction();
     try {
       const { id } = req.params;
       const { nome, crm, especialidadeIds } = req.body;
 
-      const medico = await Medico.findByPk(id);
+      const medico = await Medico.findByPk(id, { transaction });
       if (!medico) {
+        await transaction.rollback();
         return res.status(404).json({ success: false, message: 'Médico não encontrado' });
       }
 
-      await medico.update({ nome, crm });
+      await medico.update({ nome, crm }, { transaction });
 
-      if (especialidadeIds) {
-        await medico.setEspecialidades(especialidadeIds);
+      if (especialidadeIds && Array.isArray(especialidadeIds)) {
+        await medico.setEspecialidades(especialidadeIds, { transaction });
       }
       
+      await transaction.commit();
+
       const medicoAtualizado = await Medico.findByPk(id, { include: [Usuario, Especialidade] });
       return res.json({ success: true, medico: medicoAtualizado });
       
     } catch (error) {
+      await transaction.rollback();
       console.error('Erro ao atualizar médico:', error);
       return res.status(500).json({ success: false, message: 'Erro no servidor ao atualizar médico' });
     }
   },
+
 
   async delete(req, res) {
     try {
