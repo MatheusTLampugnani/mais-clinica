@@ -8,8 +8,7 @@ const MedicoPage = () => {
   const [anexos, setAnexos] = useState([]);
   const [anexoFile, setAnexoFile] = useState(null);
   const [anexoDesc, setAnexoDesc] = useState('');
-  const [success, setSuccess] = useState('');
-  const [error, setError] = useState('');
+  const [feedback, setFeedback] = useState({ type: '', message: '' });
   const API_URL = 'http://localhost:3001';
 
   const fetchConsultas = async () => {
@@ -18,7 +17,7 @@ const MedicoPage = () => {
       const response = await api.get(`/consultas/medico/${medicoId}`);
       setConsultas(response.data.consultas);
     } catch (err) {
-      setError('Erro ao carregar consultas');
+      setFeedback({type: 'danger', message: 'Erro ao carregar consultas.'});
     }
   };
 
@@ -30,20 +29,23 @@ const MedicoPage = () => {
     setConsultaSelecionada(consulta);
     setProntuario(consulta.Prontuario || { historico: '', diagnostico: '', prescricao: '' });
     setAnexos(consulta.Prontuario?.AnexoExames || []);
+    setFeedback({ type: '', message: '' }); // Limpa o feedback ao trocar de consulta
   };
 
   const handleSaveProntuario = async () => {
-    setError('');
-    setSuccess('');
+    setFeedback({ type: '', message: '' });
     try {
       const response = await api.post(`/prontuarios/consulta/${consultaSelecionada.id}`, prontuario);
-      setSuccess('Prontuário salvo com sucesso!');
+      setFeedback({ type: 'success', message: 'Prontuário salvo com sucesso!'});
+      // Atualiza o estado local para refletir que o prontuário foi salvo
       setConsultaSelecionada(prev => ({
           ...prev,
           Prontuario: response.data.prontuario
       }));
+      // Atualiza a lista de consultas para refletir o novo prontuário
+      fetchConsultas();
     } catch (err) {
-      setError(err.response?.data?.message || 'Erro ao salvar prontuário');
+      setFeedback({ type: 'danger', message: err.response?.data?.message || 'Erro ao salvar prontuário'});
     }
   };
   
@@ -54,8 +56,8 @@ const MedicoPage = () => {
   const handleAnexoUpload = async (e) => {
     e.preventDefault();
     if (!anexoFile || !consultaSelecionada?.Prontuario) {
-        alert('Selecione um arquivo e salve o prontuário primeiro.');
-        return;
+      setFeedback({type: 'warning', message: 'Selecione um arquivo e salve o prontuário primeiro.'});
+      return;
     }
     const formData = new FormData();
     formData.append('exame', anexoFile);
@@ -63,30 +65,29 @@ const MedicoPage = () => {
     formData.append('descricao', anexoDesc);
 
     try {
-        const response = await api.post('/anexos/upload', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-        });
-        setAnexos([...anexos, response.data.anexo]);
-        setAnexoFile(null);
-        setAnexoDesc('');
-        e.target.reset();
-        alert('Anexo enviado com sucesso!');
+      const response = await api.post('/anexos/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      setAnexos([...anexos, response.data.anexo]);
+      setAnexoFile(null);
+      setAnexoDesc('');
+      e.target.reset(); // Limpa o formulário de upload
+      setFeedback({type: 'success', message: 'Anexo enviado com sucesso!'});
     } catch (err) {
-        alert(err.response?.data?.message || 'Erro ao enviar anexo.');
+      setFeedback({type: 'danger', message: err.response?.data?.message || 'Erro ao enviar anexo.'});
     }
   };
 
   return (
-    <div className="card border-success">
+    <div className="card shadow-sm border-success">
       <h4 className="card-header text-white bg-success text-center">Painel do Médico</h4>
       <div className="card-body">
-        {error && <div className="alert alert-danger">{error}</div>}
-        {success && <div className="alert alert-success">{success}</div>}
+        {feedback.message && <div className={`alert alert-${feedback.type}`}>{feedback.message}</div>}
         <div className="row">
           <div className="col-md-5">
             <h5 className="mb-3">Consultas Agendadas</h5>
-            <div className="list-group" style={{maxHeight: '500px', overflowY: 'auto'}}>
-              {consultas.map((consulta) => (
+            <div className="list-group" style={{maxHeight: '600px', overflowY: 'auto'}}>
+              {consultas.length > 0 ? consultas.map((consulta) => (
                 <button
                   key={consulta.id}
                   type="button"
@@ -95,32 +96,34 @@ const MedicoPage = () => {
                 >
                   <div className="d-flex w-100 justify-content-between">
                     <h6 className="mb-1">{consulta.Paciente.nome}</h6>
-                    <small>{new Date(consulta.dataHora).toLocaleDateString()}</small>
+                    <small>{new Date(consulta.dataHora).toLocaleDateString('pt-BR')}</small>
                   </div>
                   <p className="mb-1">{new Date(consulta.dataHora).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                 </button>
-              ))}
+              )) : <p className="text-muted">Nenhuma consulta agendada.</p>}
             </div>
           </div>
           <div className="col-md-7">
             {consultaSelecionada ? (
-              <div className="card p-3">
+              <div className="card p-3 bg-light">
                 <h5 className="mb-3">Prontuário - {consultaSelecionada.Paciente.nome}</h5>
                 <div className="mb-3">
-                    <label htmlFor="historico" className="form-label">Histórico Médico</label>
-                    <textarea id="historico" name="historico" className="form-control" rows="4" value={prontuario.historico} onChange={handleChange}></textarea>
+                  <label htmlFor="historico" className="form-label">Histórico Médico</label>
+                  <textarea id="historico" name="historico" className="form-control" rows="4" value={prontuario.historico} onChange={handleChange}></textarea>
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="diagnostico" className="form-label">Diagnóstico</label>
-                    <textarea id="diagnostico" name="diagnostico" className="form-control" rows="3" value={prontuario.diagnostico} onChange={handleChange}></textarea>
+                  <label htmlFor="diagnostico" className="form-label">Diagnóstico</label>
+                  <textarea id="diagnostico" name="diagnostico" className="form-control" rows="3" value={prontuario.diagnostico} onChange={handleChange}></textarea>
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="prescricao" className="form-label">Prescrição</label>
-                    <textarea id="prescricao" name="prescricao" className="form-control" rows="3" value={prontuario.prescricao} onChange={handleChange}></textarea>
+                  <label htmlFor="prescricao" className="form-label">Prescrição</label>
+                  <textarea id="prescricao" name="prescricao" className="form-control" rows="3" value={prontuario.prescricao} onChange={handleChange}></textarea>
                 </div>
-                <button className="btn btn-success" onClick={handleSaveProntuario}>
-                  Salvar Registro
-                </button>
+                <div className="d-grid">
+                  <button className="btn btn-success" onClick={handleSaveProntuario}>
+                    Salvar Registro
+                  </button>
+                </div>
                 <hr className="my-4" />
                 <h5>Anexar Exames</h5>
                 {consultaSelecionada.Prontuario?.id ? (
@@ -138,9 +141,10 @@ const MedicoPage = () => {
                 {anexos.length > 0 ? (
                   <ul className="list-group">
                     {anexos.map(anexo => (
-                      <li key={anexo.id} className="list-group-item">
-                        <a href={`${API_URL}/${anexo.caminhoArquivo}`} target="_blank" rel="noopener noreferrer">
-                          {anexo.descricao}
+                      <li key={anexo.id} className="list-group-item d-flex justify-content-between align-items-center">
+                        {anexo.descricao}
+                        <a href={`${API_URL}/${anexo.caminhoArquivo}`} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-outline-primary">
+                          Ver Anexo
                         </a>
                       </li>
                     ))}
@@ -148,7 +152,7 @@ const MedicoPage = () => {
                 ) : <p className="text-muted small">Nenhum exame anexado.</p>}
               </div>
             ) : (
-              <div className="text-center p-5 border rounded bg-light">
+              <div className="text-center p-5 border rounded bg-light d-flex align-items-center justify-content-center" style={{minHeight: '400px'}}>
                 <p className="text-muted">Selecione uma consulta para visualizar ou editar o prontuário.</p>
               </div>
             )}

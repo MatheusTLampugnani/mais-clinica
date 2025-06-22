@@ -9,8 +9,8 @@ const LoginPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
+    // Se o usuário já tiver um token, redireciona para a página principal
+    if (localStorage.getItem('token')) {
       navigate('/');
     }
   }, [navigate]);
@@ -19,30 +19,18 @@ const LoginPage = () => {
     try {
       const response = await api.post("/auth/login", data);
       
+      // Armazena os dados do usuário no localStorage
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("perfil", response.data.perfil);
       localStorage.setItem("nome", response.data.nome);
       localStorage.setItem("id", response.data.id);
       
+      // Navega para o painel correto com base no perfil
       const { perfil } = response.data;
-
-      switch (perfil) {
-        case 'recepcionista':
-          navigate('/recepcionista');
-          break;
-        case 'medico':
-          navigate('/medico');
-          break;
-        case 'paciente':
-          navigate('/paciente');
-          break;
-        // --- CORREÇÃO APLICADA AQUI ---
-        case 'admin':
-          navigate('/admin'); // Redireciona para o painel de admin
-          break;
-        // --- FIM DA CORREÇÃO ---
-        default:
-          navigate('/');
+      if (perfil === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate(`/${perfil}`);
       }
       
     } catch (err) {
@@ -51,43 +39,46 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="row justify-content-center">
-      <div className="col-md-5">
-        <div className="card shadow-sm p-4">
+    <div className="row justify-content-center mt-4">
+      <div className="col-md-6 col-lg-5">
+        <div className="card shadow-lg p-4 border-0">
           <div className="card-body">
             <div className="text-center mb-4">
               <img src="./src/assets/logo_mais_clinica.png" alt="Mais Clínica Logo" style={{ maxWidth: '150px' }} />
             </div>
-            <h3 className="card-title text-center mb-4">Login da Clínica</h3>
+
             {error && <div className="alert alert-danger">{error}</div>}
+            
             <form onSubmit={handleSubmit(onSubmit)}>
-              <div className="mb-3">
-                <label htmlFor="login" className="form-label">Usuário</label>
+              <div className="form-floating mb-3">
                 <input
                   type="text"
                   className={`form-control ${errors.login ? "is-invalid" : ""}`}
                   id="login"
+                  placeholder="Seu usuário"
                   {...register("login", { required: "Usuário é obrigatório" })}
                 />
+                <label htmlFor="login">Usuário</label>
                 {errors.login && <div className="invalid-feedback">{errors.login.message}</div>}
               </div>
-              <div className="mb-3">
-                <label htmlFor="senha" className="form-label">Senha</label>
+              <div className="form-floating mb-3">
                 <input
                   type="password"
                   className={`form-control ${errors.senha ? "is-invalid" : ""}`}
                   id="senha"
+                  placeholder="Sua senha"
                   {...register("senha", { required: "Senha é obrigatória" })}
                 />
+                <label htmlFor="senha">Senha</label>
                 {errors.senha && <div className="invalid-feedback">{errors.senha.message}</div>}
               </div>
-              <div className="d-grid">
+              <div className="d-grid mt-4">
                 <button type="submit" className="btn btn-primary btn-lg">
                   Entrar
                 </button>
               </div>
-              <p className="mt-3 text-center">
-                Não tem uma conta? <Link to="/cadastro">Cadastre-se</Link>
+              <p className="mt-4 text-center text-muted">
+                Não tem uma conta? <Link to="/cadastro">Cadastre-se aqui</Link>
               </p>
             </form>
           </div>

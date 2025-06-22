@@ -1,5 +1,6 @@
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
 
 const HomePage = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -7,59 +8,34 @@ const HomePage = () => {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    const perfil = localStorage.getItem('perfil');
-    
-    if (token && perfil) {
+    if (token) {
       setIsLoggedIn(true);
-      
-      setTimeout(() => {
-        switch (perfil) {
-          case 'recepcionista':
-            navigate('/recepcionista');
-            break;
-          case 'medico':
-            navigate('/medico');
-            break;
-          case 'paciente':
-            navigate('/paciente');
-            break;
-          // --- CORREÇÃO APLICADA AQUI ---
-          case 'admin':
-            navigate('/admin');
-            break;
-          // --- FIM DA CORREÇÃO ---
-          default:
-            localStorage.clear();
-            navigate('/login');
-        }
-      }, 500);
-
-    } else {
-      setIsLoggedIn(false);
     }
-  }, [navigate]);
+  }, []);
 
   if (isLoggedIn) {
     return (
-      <div className="text-center">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-        <p className="mt-3">Redirecionando para o seu painel...</p>
+      <div className="text-center p-5">
+        <h1 className="display-5 fw-bold">Bem-vindo(a) de volta!</h1>
+        <p className="fs-4">Você já está autenticado no sistema.</p>
+        <p>Clique no botão abaixo para acessar o seu painel de controle.</p>
+        <Link className="btn btn-primary btn-lg mt-3" to={localStorage.getItem('perfil') === 'admin' ? '/admin' : `/${localStorage.getItem('perfil')}`}>
+          Ir para meu Painel
+        </Link>
       </div>
     );
   }
 
   return (
-    <div className="p-5 mb-4 bg-light rounded-3 shadow-sm text-center">
+    <div className="p-5 mb-4 bg-light rounded-3 shadow text-center">
       <div className="container-fluid py-5">
-        <h1 className="display-5 fw-bold">Bem-vindo à Mais Clínica</h1>
-        <p className="fs-4">
-          Sua solução completa para gestão de consultas e prontuários.
+        <img src="./src/assets/logo_mais_clinica.png" alt="Mais Clínica Logo" style={{ maxWidth: '180px', marginBottom: '2rem' }} />
+        <h1 className="display-5 fw-bold">Sua saúde, nossa prioridade.</h1>
+        <p className="fs-4 col-md-8 mx-auto">
+          Acesse o portal para gerenciar suas consultas, prontuários e agendamentos de forma simples e eficiente.
         </p>
-        <p>Faça o login para acessar seu painel.</p>
         <Link className="btn btn-primary btn-lg mt-3" to="/login">
-          Ir para o Login
+          Acessar o Sistema
         </Link>
       </div>
     </div>

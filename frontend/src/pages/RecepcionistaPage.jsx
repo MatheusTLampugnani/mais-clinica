@@ -3,6 +3,7 @@ import api from '../service/api';
 import CadastrarPaciente from '../components/recepcionista/CadastrarPaciente';
 
 const RecepcionistaPage = () => {
+  const [activeTab, setActiveTab] = useState('agendamento');
   const [pacientes, setPacientes] = useState([]);
   const [medicos, setMedicos] = useState([]);
   const [convenios, setConvenios] = useState([]);
@@ -14,8 +15,7 @@ const RecepcionistaPage = () => {
     data: '',
     hora: ''
   });
-  const [success, setSuccess] = useState('');
-  const [error, setError] = useState('');
+  const [feedback, setFeedback] = useState({ type: '', message: '' });
 
   const fetchData = async () => {
     try {
@@ -30,7 +30,7 @@ const RecepcionistaPage = () => {
       setConvenios(conveniosRes.data.convenios);
       setFilaEspera(filaRes.data.fila);
     } catch (err) {
-      setError('Erro ao carregar dados da página.');
+      setFeedback({type: 'danger', message: 'Erro ao carregar dados da página.'});
     }
   };
 
@@ -40,8 +40,7 @@ const RecepcionistaPage = () => {
 
   const handleAgendamento = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setFeedback({ type: '', message: '' });
     try {
       await api.post('/consultas', {
         pacienteId: agendamento.pacienteId,
@@ -49,11 +48,11 @@ const RecepcionistaPage = () => {
         convenioId: agendamento.convenioId,
         dataHora: `${agendamento.data}T${agendamento.hora}:00`
       });
-      setSuccess('Consulta agendada com sucesso!');
+      setFeedback({ type: 'success', message: 'Consulta agendada com sucesso!' });
       setAgendamento({ pacienteId: '', medicoId: '', convenioId: '', data: '', hora: '' });
       fetchData();
     } catch (err) {
-      setError(err.response?.data?.message || 'Erro ao agendar consulta');
+      setFeedback({ type: 'danger', message: err.response?.data?.message || 'Erro ao agendar consulta' });
     }
   };
   
@@ -66,73 +65,84 @@ const RecepcionistaPage = () => {
   };
 
   return (
-    <div className="card border-info">
-      <h4 className="card-header text-white bg-info text-center">Painel da Recepcionista</h4>
+    <div className="card shadow-sm border-info">
+      <h4 className="card-header text-white text-center bg-info">Painel da Recepcionista</h4>
       <div className="card-body">
-        <div className="row">
-          <div className="col-md-7">
-             <div className="card p-4 shadow-sm">
-              <h5 className="card-title text-center mb-4">Agendar Nova Consulta</h5>
-              {error && <div className="alert alert-danger">{error}</div>}
-              {success && <div className="alert alert-success">{success}</div>}
-              <form onSubmit={handleAgendamento}>
-                <div className="mb-3">
-                  <label htmlFor="pacienteId" className="form-label">Paciente</label>
-                  <select id="pacienteId" name="pacienteId" className="form-select" value={agendamento.pacienteId} onChange={handleChange} required>
-                    <option value="" disabled>Selecione um paciente</option>
-                    {pacientes.map((paciente) => (<option key={paciente.id} value={paciente.id}>{paciente.nome}</option>))}
-                  </select>
-                </div>
-                <div className="mb-3">
-                  <label htmlFor="medicoId" className="form-label">Médico</label>
-                  <select id="medicoId" name="medicoId" className="form-select" value={agendamento.medicoId} onChange={handleChange} required>
-                    <option value="" disabled>Selecione um médico</option>
-                    {medicos.map((medico) => (<option key={medico.id} value={medico.id}>{medico.nome}</option>))}
-                  </select>
-                </div>
-                 <div className="mb-3">
-                  <label htmlFor="convenioId" className="form-label">Convênio (Opcional)</label>
-                  <select id="convenioId" name="convenioId" className="form-select" value={agendamento.convenioId} onChange={handleChange}>
-                    <option value="">Nenhum</option>
-                    {convenios.map((c) => (<option key={c.id} value={c.id}>{c.nome}</option>))}
-                  </select>
-                </div>
-                <div className="row">
+        <ul className="nav nav-tabs nav-fill mb-4">
+          <li className="nav-item">
+            <button className={`nav-link ${activeTab === 'agendamento' ? 'active' : ''}`} onClick={() => setActiveTab('agendamento')}>Agendamento e Fila</button>
+          </li>
+          <li className="nav-item">
+            <button className={`nav-link ${activeTab === 'cadastro' ? 'active' : ''}`} onClick={() => setActiveTab('cadastro')}>Cadastrar Paciente</button>
+          </li>
+        </ul>
+        {feedback.message && <div className={`alert alert-${feedback.type}`}>{feedback.message}</div>}
+        {activeTab === 'agendamento' && (
+          <div className="row">
+            <div className="col-md-7">
+              <div className="card p-4 shadow-sm">
+                <h5 className="card-title text-center mb-4">Agendar Nova Consulta</h5>
+                <form onSubmit={handleAgendamento}>
+                  {/* Formulário de agendamento aqui */}
+                  <div className="mb-3">
+                    <label htmlFor="pacienteId" className="form-label">Paciente</label>
+                    <select id="pacienteId" name="pacienteId" className="form-select" value={agendamento.pacienteId} onChange={handleChange} required>
+                      <option value="" disabled>Selecione um paciente</option>
+                      {pacientes.map((paciente) => (<option key={paciente.id} value={paciente.id}>{paciente.nome}</option>))}
+                    </select>
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="medicoId" className="form-label">Médico</label>
+                    <select id="medicoId" name="medicoId" className="form-select" value={agendamento.medicoId} onChange={handleChange} required>
+                      <option value="" disabled>Selecione um médico</option>
+                      {medicos.map((medico) => (<option key={medico.id} value={medico.id}>{medico.nome}</option>))}
+                    </select>
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="convenioId" className="form-label">Convênio (Opcional)</label>
+                    <select id="convenioId" name="convenioId" className="form-select" value={agendamento.convenioId} onChange={handleChange}>
+                      <option value="">Nenhum</option>
+                      {convenios.map((c) => (<option key={c.id} value={c.id}>{c.nome}</option>))}
+                    </select>
+                  </div>
+                  <div className="row">
                     <div className="col-md-6 mb-3">
-                        <label htmlFor="data" className="form-label">Data</label>
-                        <input id="data" name="data" type="date" className="form-control" value={agendamento.data} onChange={handleChange} required />
+                      <label htmlFor="data" className="form-label">Data</label>
+                      <input id="data" name="data" type="date" className="form-control" value={agendamento.data} onChange={handleChange} required />
                     </div>
                     <div className="col-md-6 mb-3">
-                         <label htmlFor="hora" className="form-label">Hora</label>
-                        <input id="hora" name="hora" type="time" className="form-control" value={agendamento.hora} onChange={handleChange} required />
+                      <label htmlFor="hora" className="form-label">Hora</label>
+                      <input id="hora" name="hora" type="time" className="form-control" value={agendamento.hora} onChange={handleChange} required />
                     </div>
-                </div>
-                <div className="d-grid"><button type="submit" className="btn btn-info btn-lg text-white">Agendar</button></div>
-              </form>
+                  </div>
+                  <div className="d-grid"><button type="submit" className="btn btn-info btn-lg text-white">Agendar</button></div>
+                </form>
+              </div>
             </div>
-          </div>
-          <div className="col-md-5">
-            <div className="card p-3">
+            <div className="col-md-5">
+              <div className="card p-3">
                 <h5 className="text-center">Fila de Espera (Hoje)</h5>
                 <ul className="list-group" style={{maxHeight: '400px', overflowY: 'auto'}}>
-                    {filaEspera.length > 0 ? filaEspera.map(c => (
-                        <li key={c.id} className="list-group-item">
-                            <strong>{new Date(c.dataHora).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</strong> - {c.Paciente.nome}
-                            <br/>
-                            <small className="text-muted">Dr(a). {c.Medico.nome}</small>
-                        </li>
-                    )) : <p className="text-muted text-center mt-3">Nenhuma consulta na fila para hoje.</p>}
+                  {filaEspera.length > 0 ? filaEspera.map(c => (
+                    <li key={c.id} className="list-group-item">
+                      <strong>{new Date(c.dataHora).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</strong> - {c.Paciente.nome}
+                      <br/>
+                      <small className="text-muted">Dr(a). {c.Medico.nome}</small>
+                    </li>
+                  )) : <p className="text-muted text-center mt-3">Nenhuma consulta na fila para hoje.</p>}
                 </ul>
+              </div>
             </div>
           </div>
-        </div>
-        <hr className="my-4"/>
-        <div className="row justify-content-center">
-            <div className="col-lg-10">
-                <CadastrarPaciente />
-            </div>
-        </div>
+        )}
 
+        {activeTab === 'cadastro' && (
+          <div className="row justify-content-center">
+            <div className="col-lg-10">
+              <CadastrarPaciente onPatientRegistered={fetchData} />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
