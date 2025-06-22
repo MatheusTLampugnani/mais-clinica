@@ -17,6 +17,7 @@ const convenioRoutes = require('./routes/convenioRoutes');
 const anexoRoutes = require('./routes/anexoRoutes');
 const relatorioRoutes = require('./routes/relatorioRoutes');
 
+
 app.use('/api/auth', authRoutes);
 app.use('/api/pacientes', pacienteRoutes);
 app.use('/api/medicos', medicoRoutes);
@@ -26,19 +27,21 @@ app.use('/api/especialidades', especialidadeRoutes);
 app.use('/api/convenios', convenioRoutes);
 app.use('/api/anexos', anexoRoutes);
 app.use('/api/relatorios', relatorioRoutes);
+app.use('/uploads', express.static('uploads'));
 
-
-app.get('/api', (req, res) => {
-  res.json({
-    message: 'API do Sistema de Gestão de Clínicas Médicas no ar!',
-    version: '1.0.0'
-  });
-});
 
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send('Algo deu errado no servidor!');
-});
+  console.error(err);
 
+  if (err.name === 'SequelizeValidationError' || err.name === 'SequelizeUniqueConstraintError') {
+    const messages = err.errors.map(e => e.message);
+    return res.status(400).json({ success: false, message: messages.join(', ') });
+  }
+  if (err.name === 'UnauthorizedError') {
+      return res.status(401).json({ success: false, message: 'Token inválido ou expirado.' });
+  }
+
+  res.status(500).json({ success: false, message: 'Algo deu errado no servidor!' });
+});
 
 module.exports = app;

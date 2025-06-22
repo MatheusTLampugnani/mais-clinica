@@ -16,7 +16,7 @@ const Layout = () => {
         <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
           <div className="container">
             <Link className="navbar-brand" to="/">
-              Mais Clínica
+              <img src="./src/assets/logo_mais_clinica.png" alt="Mais Clínica Logo" style={{ height: '70px' }} />
             </Link>
             <div className="collapse navbar-collapse">
               <ul className="navbar-nav ms-auto mb-2 mb-lg-0">

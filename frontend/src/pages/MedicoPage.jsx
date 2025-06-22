@@ -5,46 +5,76 @@ const MedicoPage = () => {
   const [consultas, setConsultas] = useState([]);
   const [consultaSelecionada, setConsultaSelecionada] = useState(null);
   const [prontuario, setProntuario] = useState({ historico: '', diagnostico: '', prescricao: '' });
+  const [anexos, setAnexos] = useState([]);
+  const [anexoFile, setAnexoFile] = useState(null);
+  const [anexoDesc, setAnexoDesc] = useState('');
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const API_URL = 'http://localhost:3001';
+
+  const fetchConsultas = async () => {
+    const medicoId = localStorage.getItem('id');
+    try {
+      const response = await api.get(`/consultas/medico/${medicoId}`);
+      setConsultas(response.data.consultas);
+    } catch (err) {
+      setError('Erro ao carregar consultas');
+    }
+  };
 
   useEffect(() => {
-    const fetchConsultas = async () => {
-      const medicoId = localStorage.getItem('id');
-      try {
-        const response = await api.get(`/consultas/medico/${medicoId}`);
-        setConsultas(response.data.consultas);
-      } catch (err) {
-        setError('Erro ao carregar consultas');
-      }
-    };
     fetchConsultas();
   }, []);
 
   const handleSelectConsulta = (consulta) => {
     setConsultaSelecionada(consulta);
-    // Busca o prontuário existente ou inicializa um novo
-    if (consulta.Prontuario) {
-      setProntuario(consulta.Prontuario);
-    } else {
-      setProntuario({ historico: '', diagnostico: '', prescricao: '' });
-    }
+    setProntuario(consulta.Prontuario || { historico: '', diagnostico: '', prescricao: '' });
+    setAnexos(consulta.Prontuario?.AnexoExames || []);
   };
 
   const handleSaveProntuario = async () => {
     setError('');
     setSuccess('');
     try {
-      await api.post(`/prontuarios/consulta/${consultaSelecionada.id}`, prontuario);
+      const response = await api.post(`/prontuarios/consulta/${consultaSelecionada.id}`, prontuario);
       setSuccess('Prontuário salvo com sucesso!');
+      setConsultaSelecionada(prev => ({
+          ...prev,
+          Prontuario: response.data.prontuario
+      }));
     } catch (err) {
       setError(err.response?.data?.message || 'Erro ao salvar prontuário');
     }
   };
   
   const handleChange = (e) => {
-      setProntuario({...prontuario, [e.target.name]: e.target.value});
-  }
+    setProntuario({...prontuario, [e.target.name]: e.target.value});
+  };
+
+  const handleAnexoUpload = async (e) => {
+    e.preventDefault();
+    if (!anexoFile || !consultaSelecionada?.Prontuario) {
+        alert('Selecione um arquivo e salve o prontuário primeiro.');
+        return;
+    }
+    const formData = new FormData();
+    formData.append('exame', anexoFile);
+    formData.append('prontuarioId', consultaSelecionada.Prontuario.id);
+    formData.append('descricao', anexoDesc);
+
+    try {
+        const response = await api.post('/anexos/upload', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        setAnexos([...anexos, response.data.anexo]);
+        setAnexoFile(null);
+        setAnexoDesc('');
+        e.target.reset();
+        alert('Anexo enviado com sucesso!');
+    } catch (err) {
+        alert(err.response?.data?.message || 'Erro ao enviar anexo.');
+    }
+  };
 
   return (
     <div className="card border-success">
@@ -76,21 +106,46 @@ const MedicoPage = () => {
             {consultaSelecionada ? (
               <div className="card p-3">
                 <h5 className="mb-3">Prontuário - {consultaSelecionada.Paciente.nome}</h5>
-                 <div className="mb-3">
+                <div className="mb-3">
                     <label htmlFor="historico" className="form-label">Histórico Médico</label>
                     <textarea id="historico" name="historico" className="form-control" rows="4" value={prontuario.historico} onChange={handleChange}></textarea>
                 </div>
-                 <div className="mb-3">
+                <div className="mb-3">
                     <label htmlFor="diagnostico" className="form-label">Diagnóstico</label>
                     <textarea id="diagnostico" name="diagnostico" className="form-control" rows="3" value={prontuario.diagnostico} onChange={handleChange}></textarea>
                 </div>
-                 <div className="mb-3">
+                <div className="mb-3">
                     <label htmlFor="prescricao" className="form-label">Prescrição</label>
                     <textarea id="prescricao" name="prescricao" className="form-control" rows="3" value={prontuario.prescricao} onChange={handleChange}></textarea>
                 </div>
                 <button className="btn btn-success" onClick={handleSaveProntuario}>
                   Salvar Registro
                 </button>
+                <hr className="my-4" />
+                <h5>Anexar Exames</h5>
+                {consultaSelecionada.Prontuario?.id ? (
+                  <form onSubmit={handleAnexoUpload} className="mb-3">
+                    <div className="input-group">
+                      <input type="text" className="form-control" placeholder="Descrição do exame" value={anexoDesc} onChange={e => setAnexoDesc(e.target.value)} required />
+                      <input type="file" className="form-control" onChange={e => setAnexoFile(e.target.files[0])} required />
+                      <button type="submit" className="btn btn-outline-secondary">Enviar</button>
+                    </div>
+                  </form>
+                ) : (
+                  <p className="text-muted small">Salve o prontuário ao menos uma vez para poder anexar exames.</p>
+                )}
+                <h6 className="mt-2">Exames Anexados</h6>
+                {anexos.length > 0 ? (
+                  <ul className="list-group">
+                    {anexos.map(anexo => (
+                      <li key={anexo.id} className="list-group-item">
+                        <a href={`${API_URL}/${anexo.caminhoArquivo}`} target="_blank" rel="noopener noreferrer">
+                          {anexo.descricao}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                ) : <p className="text-muted small">Nenhum exame anexado.</p>}
               </div>
             ) : (
               <div className="text-center p-5 border rounded bg-light">

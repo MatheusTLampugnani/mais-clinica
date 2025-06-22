@@ -22,7 +22,7 @@ const Usuario = sequelize.define('Usuario', {
     allowNull: false
   },
   perfil: {
-    type: DataTypes.ENUM('admin', 'medico', 'recepcionista'),
+    type: DataTypes.ENUM('admin', 'medico', 'recepcionista', 'paciente'),
     allowNull: false
   }
 }, {

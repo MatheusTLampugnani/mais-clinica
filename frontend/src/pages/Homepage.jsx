@@ -23,6 +23,11 @@ const HomePage = () => {
           case 'paciente':
             navigate('/paciente');
             break;
+          // --- CORREÇÃO APLICADA AQUI ---
+          case 'admin':
+            navigate('/admin');
+            break;
+          // --- FIM DA CORREÇÃO ---
           default:
             localStorage.clear();
             navigate('/login');

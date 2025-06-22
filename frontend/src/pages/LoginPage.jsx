@@ -36,8 +36,11 @@ const LoginPage = () => {
         case 'paciente':
           navigate('/paciente');
           break;
+        // --- CORREÇÃO APLICADA AQUI ---
         case 'admin':
+          navigate('/admin'); // Redireciona para o painel de admin
           break;
+        // --- FIM DA CORREÇÃO ---
         default:
           navigate('/');
       }
@@ -52,6 +55,9 @@ const LoginPage = () => {
       <div className="col-md-5">
         <div className="card shadow-sm p-4">
           <div className="card-body">
+            <div className="text-center mb-4">
+              <img src="./src/assets/logo_mais_clinica.png" alt="Mais Clínica Logo" style={{ maxWidth: '150px' }} />
+            </div>
             <h3 className="card-title text-center mb-4">Login da Clínica</h3>
             {error && <div className="alert alert-danger">{error}</div>}
             <form onSubmit={handleSubmit(onSubmit)}>

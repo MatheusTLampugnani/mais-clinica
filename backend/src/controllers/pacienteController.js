@@ -6,6 +6,15 @@ const pacienteController = {
     try {
       const { nome, dataNascimento, cpf, contato, login, senha } = req.body;
 
+      const usuarioExistente = await Usuario.findOne({ where: { login } });
+      if (usuarioExistente) {
+        await transaction.rollback();
+        return res.status(409).json({
+          success: false, 
+          message: 'O login informado já está em uso. Por favor, escolha outro.' 
+        });
+      }
+
       const novoUsuario = await Usuario.create({
         nome,
         login,

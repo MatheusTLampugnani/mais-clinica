@@ -1,15 +1,29 @@
 const { Consulta, Paciente, Medico, Prontuario } = require('../models');
 const { Op } = require('sequelize');
 
+
 const consultaController = {
   async create(req, res) {
     try {
-      const { pacienteId, medicoId, dataHora } = req.body;
+      let { pacienteId, medicoId, dataHora, convenioId } = req.body;
+
+      if (!pacienteId || !medicoId || !dataHora) {
+        return res.status(400).json({
+          success: false,
+          message: 'A seleção de Paciente, Médico e a Data/Hora são obrigatórios.'
+        });
+      }
+      if (convenioId === '') {
+        convenioId = null;
+      }
+      
       const novaConsulta = await Consulta.create({ 
         PacienteId: pacienteId, 
         MedicoId: medicoId, 
+        ConvenioId: convenioId,
         dataHora 
       });
+
       res.status(201).json({ success: true, consulta: novaConsulta });
     } catch (error){
       console.error('Erro ao agendar consulta:', error);
@@ -80,7 +94,16 @@ const consultaController = {
       const pacienteId = req.params.id;
       const consultas = await Consulta.findAll({
         where: { PacienteId: pacienteId },
-        include: [{ model: Medico, attributes: ['id', 'nome'] }],
+        include: [
+          { 
+            model: Medico, 
+            attributes: ['id', 'nome'] 
+          },
+          {
+            model: Prontuario,
+            include: [ AnexoExame ]
+          }
+        ],
         order: [['dataHora', 'DESC']]
       });
       res.json({ success: true, consultas });
