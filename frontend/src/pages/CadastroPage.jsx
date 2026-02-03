@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../service/api';
+import logo from "../assets/logo_mais_clinica.png";
 
 const CadastroPage = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
@@ -18,13 +19,13 @@ const CadastroPage = () => {
     }
   };
 
-  return (
+return (
     <div className="row justify-content-center">
       <div className="col-md-8 col-lg-6">
         <div className="card shadow-lg p-4">
           <div className="card-body">
             <div className="text-center mb-4">
-              <img src="./src/assets/logo_mais_clinica.png" alt="Mais Clínica Logo" style={{ maxWidth: '150px' }} />
+              <img src={logo} alt="Mais Clínica Logo" style={{ maxWidth: '150px' }} />
               <h3 className="card-title mt-3">Crie sua Conta</h3>
               <p className="text-muted">Preencha os campos abaixo para se registrar.</p>
             </div>

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../service/api";
+import logo from "../assets/logo_mais_clinica.png";
 
 const LoginPage = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
@@ -9,7 +10,6 @@ const LoginPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Se o usuário já tiver um token, redireciona para a página principal
     if (localStorage.getItem('token')) {
       navigate('/');
     }
@@ -19,13 +19,11 @@ const LoginPage = () => {
     try {
       const response = await api.post("/auth/login", data);
       
-      // Armazena os dados do usuário no localStorage
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("perfil", response.data.perfil);
       localStorage.setItem("nome", response.data.nome);
       localStorage.setItem("id", response.data.id);
       
-      // Navega para o painel correto com base no perfil
       const { perfil } = response.data;
       if (perfil === 'admin') {
         navigate('/admin');
@@ -38,13 +36,13 @@ const LoginPage = () => {
     }
   };
 
-  return (
+return (
     <div className="row justify-content-center mt-4">
       <div className="col-md-6 col-lg-5">
         <div className="card shadow-lg p-4 border-0">
           <div className="card-body">
             <div className="text-center mb-4">
-              <img src="./src/assets/logo_mais_clinica.png" alt="Mais Clínica Logo" style={{ maxWidth: '150px' }} />
+              <img src={logo} alt="Mais Clínica Logo" style={{ maxWidth: '150px' }} />
             </div>
 
             {error && <div className="alert alert-danger">{error}</div>}

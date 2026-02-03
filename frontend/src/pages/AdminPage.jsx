@@ -63,7 +63,6 @@ const AdminPage = () => {
           </li>
         </ul>
 
-        {/* Conteúdo da Aba Ativa */}
         <div className="tab-content p-3 border bg-light rounded">
           {renderContent()}
         </div>

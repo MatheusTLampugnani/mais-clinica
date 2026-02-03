@@ -29,7 +29,7 @@ const MedicoPage = () => {
     setConsultaSelecionada(consulta);
     setProntuario(consulta.Prontuario || { historico: '', diagnostico: '', prescricao: '' });
     setAnexos(consulta.Prontuario?.AnexoExames || []);
-    setFeedback({ type: '', message: '' }); // Limpa o feedback ao trocar de consulta
+    setFeedback({ type: '', message: '' });
   };
 
   const handleSaveProntuario = async () => {
@@ -37,12 +37,10 @@ const MedicoPage = () => {
     try {
       const response = await api.post(`/prontuarios/consulta/${consultaSelecionada.id}`, prontuario);
       setFeedback({ type: 'success', message: 'Prontuário salvo com sucesso!'});
-      // Atualiza o estado local para refletir que o prontuário foi salvo
       setConsultaSelecionada(prev => ({
           ...prev,
           Prontuario: response.data.prontuario
       }));
-      // Atualiza a lista de consultas para refletir o novo prontuário
       fetchConsultas();
     } catch (err) {
       setFeedback({ type: 'danger', message: err.response?.data?.message || 'Erro ao salvar prontuário'});
@@ -71,7 +69,7 @@ const MedicoPage = () => {
       setAnexos([...anexos, response.data.anexo]);
       setAnexoFile(null);
       setAnexoDesc('');
-      e.target.reset(); // Limpa o formulário de upload
+      e.target.reset();
       setFeedback({type: 'success', message: 'Anexo enviado com sucesso!'});
     } catch (err) {
       setFeedback({type: 'danger', message: err.response?.data?.message || 'Erro ao enviar anexo.'});

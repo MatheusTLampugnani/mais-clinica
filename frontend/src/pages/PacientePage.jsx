@@ -25,7 +25,7 @@ const PacientePage = () => {
       try {
         await api.delete(`/consultas/${consultaId}`);
         setFeedback({ type: 'success', message: 'Consulta cancelada com sucesso!' });
-        fetchConsultas(); // Recarrega a lista de consultas
+        fetchConsultas();
       } catch (err) {
         setFeedback({ type: 'danger', message: err.response?.data?.message || 'Erro ao cancelar consulta' });
       }

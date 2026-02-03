@@ -83,7 +83,6 @@ const RecepcionistaPage = () => {
               <div className="card p-4 shadow-sm">
                 <h5 className="card-title text-center mb-4">Agendar Nova Consulta</h5>
                 <form onSubmit={handleAgendamento}>
-                  {/* Formulário de agendamento aqui */}
                   <div className="mb-3">
                     <label htmlFor="pacienteId" className="form-label">Paciente</label>
                     <select id="pacienteId" name="pacienteId" className="form-select" value={agendamento.pacienteId} onChange={handleChange} required>
